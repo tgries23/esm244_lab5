@@ -1,0 +1,25 @@
+---
+title: "ESM 244 Lab5"
+author: "Taylor Gries"
+date: "2/3/2022"
+output: html_document
+---
+
+```{r setup, include=TRUE, warning = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(here)
+
+### for part 1, PCA:
+library(ggfortify)
+library(palmerpenguins)
+library(patchwork)
+
+### for part 2, ggplot customization
+library(readxl)
+library(gghighlight)
+library(lubridate)
+library(plotly)
+```
+
+
