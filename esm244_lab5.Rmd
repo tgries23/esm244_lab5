@@ -23,3 +23,74 @@ library(plotly)
 ```
 
 
+# Part 1: PCA (Principal Components Analysis)
+
+```{r}
+penguin_clean <- penguins %>%
+  drop_na() ### need to get rid of NAs for this to run
+
+penguin_pca <- penguin_clean %>%
+  select(body_mass_g, ends_with('_mm')) %>%
+  scale() %>% ### variables on different scales
+  prcomp() ### view with `penguin_pca$rotation` or `penguin_pca$dev` or `penguin_pca$x`
+```
+
+
+
+## Biplot by hand 
+
+```{r}
+loadings_df <- data.frame(penguin_pca$rotation) %>% ### create a new column named axis
+  mutate(axis = row.names(.)) # do this so we can refer to it in ggplot
+new_pts_df <- data.frame(penguin_pca$x) ### that is original data plotted out but rescaled and retransformed into principal compenents 
+
+ggplot() +
+  geom_point(data = new_pts_df, aes(x = PC1, y = PC2), color = 'blue') +
+  geom_segment(data = loadings_df, x = 0, y = 0,
+               aes(xend = PC1, yend = PC2, group = axis),
+               arrow = arrow(length = unit(.25, 'cm'))) +
+  geom_text(data = loadings_df,
+          aes(x = PC1, y = PC2, label = axis),
+          vjust = 0, nudge_y = 0.2) ### vjust is vertical justification based on bottom (0) or top (1)
+```
+
+```{r}
+autoplot(penguin_pca, ### creates a ggplot object 
+         data = penguin_clean,
+         loadings = TRUE,
+         colour = 'species',
+         loadings.label = TRUE,
+         loadings.color = 'black',
+         loadings.label.colour = 'black',
+         loadings.label.vjust = -0.5) +
+  scale_color_manual(values = c('blue', 'purple', 'orange')) +
+  theme_minimal()
+```
+
+
+## Screeplot by hand
+
+```{r}
+sd_vec <- penguin_pca$sdev
+var_vec <- sd_vec^2
+
+pc_names <- colnames(penguin_pca$rotation)
+pct_expl_df <- data.frame(v = var_vec,
+                               pct_v = var_vec / sum(var_vec),
+                               pc = fct_inorder(pc_names)) %>%
+  mutate(pct_lbl = paste0(round(pct_v * 100, 1), '%'))
+
+ggplot(pct_expl_df, aes(x = pc, y = v)) +
+  geom_col() +
+  geom_text(aes(label = pct_lbl), vjust = 0, nudge_y = .005) +
+           labs(x = "Principal component", y = "Variance explained")
+
+```
+
+```{r}
+screeplot(penguin_pca, type = 'lines')
+screeplot(penguin_pca, type = 'barplot')
+```
+
+
+
