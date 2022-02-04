@@ -92,5 +92,60 @@ screeplot(penguin_pca, type = 'lines')
 screeplot(penguin_pca, type = 'barplot')
 ```
 
+# Part 2
+
+```{r}
+fish_noaa <- read_excel(here('data', 'foss_landings.xlsx')) %>%
+  janitor::clean_names() %>%
+  mutate(across(where(is.character), tolower)) %>% ### converts everything to lower case 
+  mutate(nmfs_name = str_sub(nmfs_name, end = -4)) %>% ### gets rid of the weird space and manipulates text to get rid of * in og data
+  filter(confidentiality == 'public')
+```
+
+
+```{r}
+fish_plot <- ggplot(data = fish_noaa, aes(x = year, y = pounds, group = nmfs_name)) +
+  geom_line(aes(color = nmfs_name)) +
+  theme_minimal()
+
+ggplotly(fish_plot)
+
+ggplot(data = fish_noaa, aes(x = year, y = pounds, group = nmfs_name)) +
+  geom_line() +
+  gghighlight(nmfs_name == 'rockfishes') +
+  theme_minimal()
+
+ggplot(data = fish_noaa, aes(x = year, y = pounds, group = nmfs_name)) +
+  geom_line(aes(color = nmfs_name)) +
+  gghighlight(max(pounds) > 1e8) +
+  theme_minimal()
+  
+```
+
+
+## read in data from URL and practice some lubridate
+
+```{r}
+monroe_wt <- read_csv('https://raw.githubusercontent.com/oharac/esm244_w22_lab5/master/data/MWTP_Elec_Daily.csv')
+
+monroe_ts <- monroe_wt %>%
+  mutate(date = lubridate::mdy(date)) %>%
+  mutate(record_month = lubridate::month(date), 
+         month_name = month.abb[record_month]) %>% ### abb is abbreviation
+  mutate(month_name = fct_reorder(month_name, record_month))
+
+ggplot(data = monroe_ts, aes(x= month_name, y = total_kwh)) +
+  geom_jitter(aes(color = month_name),
+              show.legend = FALSE,
+              alpha = 0.5,
+              size = 0.3,
+              width = 0.2) + 
+  theme_bw()
+            
+```
+
+
+
+
 
 
